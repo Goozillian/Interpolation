@@ -2,14 +2,15 @@
 #include <math.h>
 #include <GL/glut.h>
 #include "链表.h"
+#include "图形界面.h"
 #include "OpenGL.h"
-Point S,E; //起点和终点
-Point M; //圆上一点
-Point SM,ME; //向量
-Point Vorg; //圆心处单位法向量
-Point O; //圆心坐标，但圆心坐标有可能不是整数，则与其把Point定义为浮点型或为圆心单独设立一个数据结构，不如使用偏差向量保存偏差值，这种做法实在绝妙。不过想想还是修改Point定义为浮点型吧一了百了
+static Point S,E; //起点和终点
+static Point M; //圆上一点
+static Point SM,ME; //向量
+static Point Vorg; //圆心处单位法向量
+static Point O; //圆心坐标，但圆心坐标有可能不是整数，则与其把Point定义为浮点型或为圆心单独设立一个数据结构，不如使用偏差向量保存偏差值，这种做法实在绝妙。不过想想还是修改Point定义为浮点型吧一了百了
 //float R_offset[3]={0,0,0}; //偏差向量
-int AB(Point A,Point B,Point &C) //两个点确定一个向量。不用自己写出表达式之借助引擎自动生成，架设好基础系统后问题就越来越好办了，尤其基础系统还有基础系统之循重，所谓深度学习其实也是这样之亦系统论，这也是基础研究意义的体现
+int AB(Point A,Point B,Point &C) //两个点确定一个向量。不用自己写出表达式之借助引擎自动生成，架设好基础系统后问题就越来越好办了，尤其基础系统还有基础系统之循重，所谓深度学习其实也是这样之亦系统论，这也是基础研究意义的体现，是模型之少生多之作用的体现
 {
   C.x=B.x-A.x;
   C.y=B.y-A.y;
@@ -140,18 +141,51 @@ int allocation() //脉冲分配函数，也即插补函数。由于曲线皆有�
   }
   return 0;
 }
-int main(int argc,char *argv[])
+int are_the_same(Point A,Point B)
 {
-  scanf("%f%f%f",&S.x,&S.y,&S.z);
-  scanf("%f%f%f",&E.x,&E.y,&E.z);
-  scanf("%f%f%f",&M.x,&M.y,&M.z);
+  if(A.x==B.x&&A.y==B.y&&A.z==B.z)return 1;
+  else return 0;
+}
+void confirm_input()
+{
+  GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window),GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,"确定圆弧的三点必须互不重合！");
+  gtk_window_set_title(GTK_WINDOW(dialog), "ERROR");
+  
+  gtk_dialog_run(GTK_DIALOG (dialog));
+  gtk_widget_destroy(dialog);
+}
+void circle_interpolation()
+{
+  const gchar *str[9];
+  int i,j;
+  j=0;
+  for(i=0;i<9;i++)
+  {
+    j=i/3;
+    str[i]=gtk_entry_get_text(GTK_ENTRY(w_tab2[j].entry[i%3]));
+  }
+  S.x=atoi(str[0]);
+  S.y=atoi(str[1]);
+  S.z=atoi(str[2]);
+  E.x=atoi(str[3]);
+  E.y=atoi(str[4]);
+  E.z=atoi(str[5]);
+  M.x=atoi(str[6]);
+  M.y=atoi(str[7]);
+  M.z=atoi(str[8]);
+  //scanf("%f%f%f",&S.x,&S.y,&S.z);
+  //scanf("%f%f%f",&E.x,&E.y,&E.z);
+  //scanf("%f%f%f",&M.x,&M.y,&M.z);
   //输入时要确保S、E、M互不重合，之毕竟三点才能确定一个圆
+  if(are_the_same(S,E)||are_the_same(S,M)||are_the_same(E,M))
+  {
+    confirm_input();
+    return;
+  }
   InitList(L);
   genVorg();
   genO();
   allocation();
-  glutInit(&argc, argv);//对GLUT进行初始化，这个函数必须在其它的GLUT使用之前调用一次
   OpenGL();
   DestroyList(L);
-  return 0;
 }
