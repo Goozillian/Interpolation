@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <GL/glut.h>
 #include "链表.h"
+#include "图形界面.h"
 #include "OpenGL.h"
-Point S,E; //起点和终点
+static Point S,E; //起点和终点
 int resume[3]={1,1,1}; //还原向量，这里原来用的bool，但由于后面设的值为-1所以出现了逻辑错误，所以找bug真是技术活，这个值得谨记
 void swap(int &a,int &b)
 {
@@ -70,10 +71,27 @@ int allocation(Point E) //脉冲分配函数，也即插补函数
   }
   return 0;
 }
-int main(int argc,char *argv[])
+void line_interpolation()
 {
-  scanf("%f%f%f",&S.x,&S.y,&S.z);
-  scanf("%f%f%f",&E.x,&E.y,&E.z);
+  const gchar *str[6];
+  int i,j;
+  //for(i=0;i<3;i++)str[i]=gtk_entry_get_text(GTK_ENTRY(w_tab1[0].entry[i]));
+  //for(i=3;i<6;i++)str[i]=gtk_entry_get_text(GTK_ENTRY(w_tab1[1].entry[i-3]));
+  //可以使用形式化方法之模型压缩代码
+  j=0;
+  for(i=0;i<6;i++)
+  {
+    if(i==3)j=1;
+    str[i]=gtk_entry_get_text(GTK_ENTRY(w_tab1[j].entry[i%3]));
+  }
+  S.x=atoi(str[0]);
+  S.y=atoi(str[1]);
+  S.z=atoi(str[2]);
+  E.x=atoi(str[3]);
+  E.y=atoi(str[4]);
+  E.z=atoi(str[5]);
+  //scanf("%f%f%f",&S.x,&S.y,&S.z);
+  //scanf("%f%f%f",&E.x,&E.y,&E.z);
   //printf("%f %f %f ",S.x,S.y,S.z);
   //判断三个坐标中哪个最大则哪个要分配的脉冲最多则脉冲间隔最短，而之后的算法都是依据脉冲间隔最短者做的，这需要形式化的处理，也算是基本功
   move_to_o(S,E);
@@ -82,8 +100,6 @@ int main(int argc,char *argv[])
   if(select(order[0],E)<select(order[2],E))swap(order[0],order[2]);
   InitList(L);
   allocation(E);
-  glutInit(&argc, argv);//对GLUT进行初始化，这个函数必须在其它的GLUT使用之前调用一次
   OpenGL();
   DestroyList(L);
-  return 0;
 }
